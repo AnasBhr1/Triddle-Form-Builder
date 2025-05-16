@@ -1,0 +1,32 @@
+{
+  "name": "triddle-app",
+  "version": "1.0.0",
+  "description": "Triddle - Fragmented Form Builder",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd triddle-backend && npm run dev\" \"cd triddle-frontend && npm start\"",
+    "build": "cd triddle-backend && npm run build && cd ../triddle-frontend && npm run build",
+    "start:backend": "cd triddle-backend && npm run dev",
+    "start:frontend": "cd triddle-frontend && npm start",
+    "install:all": "cd triddle-backend && npm install && cd ../triddle-frontend && npm install",
+    "clean": "cd triddle-backend && npm run clean && cd ../triddle-frontend && rm -rf build",
+    "test": "cd triddle-backend && npm test && cd ../triddle-frontend && npm test",
+    "lint": "cd triddle-backend && npm run lint && cd ../triddle-frontend && npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/triddle-app.git"
+  },
+  "keywords": [
+    "form-builder",
+    "react",
+    "typescript",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
