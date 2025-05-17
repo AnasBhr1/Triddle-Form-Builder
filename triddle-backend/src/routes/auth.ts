@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/authController';
-import { validate, authSchemas } from '../middleware/validation';
+import { validate, authSchemas, authenticate } from '../middleware/validation';
 import { authLimiter } from '../middleware';
 
 const router = Router();
@@ -14,6 +14,6 @@ router.post('/forgot-password', authLimiter, validate(authSchemas.forgotPassword
 router.post('/reset-password', authLimiter, validate(authSchemas.resetPassword), AuthController.resetPassword);
 
 // Protected routes
-router.get('/me', AuthController.getMe);
+router.get('/me', authenticate, AuthController.getMe);
 
 export default router;

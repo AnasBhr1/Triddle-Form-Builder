@@ -2,7 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth';
 import formRoutes from './forms';
 import responseRoutes from './responses';
-import uploadRoutes from './uploads';
+import uploadRoutes from '../uploads';
 
 const router = Router();
 

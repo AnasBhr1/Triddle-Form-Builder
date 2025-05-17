@@ -3,6 +3,7 @@ import { JWTUtils } from '../utils/jwt';
 import { ResponseUtils } from '../utils/response';
 import { IAuthenticatedRequest, UserRole } from '../types';
 import User from '../models/User';
+import Joi from 'joi';  // Add this import for Joi
 
 export const authenticate = async (
   req: IAuthenticatedRequest,
@@ -91,4 +92,46 @@ export const optionalAuthenticate = async (
     // Silently fail for optional authentication
     next();
   }
+};
+
+// Add the validation related functions below
+
+export const authSchemas = {
+  register: Joi.object({
+    username: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    // Add any other fields required for registration
+  }),
+  login: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+  forgotPassword: Joi.object({
+    email: Joi.string().email().required(),
+  }),
+  resetPassword: Joi.object({
+    token: Joi.string().required(),
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required()
+      .messages({ 'any.only': 'Passwords must match' }),
+  }),
+  // You can add other auth schemas as needed
+};
+
+// The key fix is in this validate function
+export const validate = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const { error } = schema.validate(req.body);
+    
+    if (error) {
+      res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+      return;
+    }
+    
+    next();
+  };
 };
