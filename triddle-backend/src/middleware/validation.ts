@@ -98,10 +98,28 @@ export const optionalAuthenticate = async (
 
 export const authSchemas = {
   register: Joi.object({
-    username: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    // Add any other fields required for registration
+    firstName: Joi.string().required().messages({
+      'any.required': 'First name is required',
+      'string.empty': 'First name is required'
+    }),
+    lastName: Joi.string().required().messages({
+      'any.required': 'Last name is required',
+      'string.empty': 'Last name is required'
+    }),
+    email: Joi.string().email().required().messages({
+      'any.required': 'Email is required',
+      'string.email': 'Please provide a valid email',
+      'string.empty': 'Email is required'
+    }),
+    password: Joi.string().min(6).required().messages({
+      'any.required': 'Password is required',
+      'string.min': 'Password must be at least 6 characters',
+      'string.empty': 'Password is required'
+    }),
+    // Add confirmPassword if your frontend has this field
+    confirmPassword: Joi.string().valid(Joi.ref('password')).messages({
+      'any.only': 'Passwords must match'
+    })
   }),
   login: Joi.object({
     email: Joi.string().email().required(),
