@@ -13,9 +13,13 @@ module.exports = {
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
+          200: '#bfdbfe', // Added this shade
+          300: '#93c5fd', // Added this shade
+          400: '#60a5fa', // Added this shade
           500: '#3b82f6',
           600: '#2563eb',
           700: '#1d4ed8',
+          800: '#1e40af', // Added this shade
           900: '#1e3a8a',
         },
         gray: {
@@ -58,22 +62,9 @@ module.exports = {
     },
   },
   plugins: [
-    require('daisyui'),
+    require('daisyui')
   ],
   daisyui: {
-    themes: [
-      {
-        light: {
-          ...require("daisyui/src/theming/themes")["light"],
-          primary: "#3b82f6",
-          secondary: "#64748b",
-        },
-        dark: {
-          ...require("daisyui/src/theming/themes")["dark"],
-          primary: "#3b82f6",
-          secondary: "#64748b",
-        },
-      },
-    ],
-  },
+    themes: ["light", "dark"]
+  }
 }

@@ -334,10 +334,6 @@ Make sure to update:
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
-
-MIT License - see the LICENSE file for details
-
 ## Support
 
 For support, email [anasbhr1@hotmail.com] or create an issue on GitHub.

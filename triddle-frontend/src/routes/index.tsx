@@ -12,7 +12,7 @@ import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 
 // Protected pages
-import DashboardPage from '../pages/DashboardPage';
+import DashboardPage from '../pages/Dashboardpage';
 import FormsPage from '../pages/forms/FormsPage';
 import FormBuilderPage from '../pages/forms/FormBuilderPage';
 import FormPreviewPage from '../pages/forms/FormPreviewPage';

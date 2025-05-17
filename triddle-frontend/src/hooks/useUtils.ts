@@ -1,17 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFormBuilderStore } from '../store/formBuilder';
-import { useAutoSave } from './useForms';
 
 // Auto-save hook for form builder
 export const useFormAutoSave = (formId: string, intervalMs: number = 30000) => {
   const { isDirty, currentForm } = useFormBuilderStore();
-  const { triggerAutoSave, isAutoSaving } = useAutoSave(formId);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  // We'll need to implement the auto-save functionality here
+  // For now, let's create a mock implementation
+  
+  const triggerAutoSave = async () => {
+    if (!currentForm || !isDirty) return;
+    // TODO: Implement actual auto-save logic
+    console.log('Auto-saving form...');
+  };
+
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!currentForm?.settings.autoSave) return;
 
     const startAutoSave = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       intervalRef.current = setInterval(() => {
         if (isDirty) {
           triggerAutoSave();
@@ -36,7 +46,7 @@ export const useFormAutoSave = (formId: string, intervalMs: number = 30000) => {
   };
 
   return {
-    isAutoSaving,
+    isAutoSaving: false, // Mock implementation
     manualSave,
     isDirty,
   };

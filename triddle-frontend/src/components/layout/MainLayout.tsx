@@ -1,10 +1,20 @@
 import React from 'react';
 import { cn } from '../../utils';
 
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface HeaderProps {
+  onMenuToggle?: () => void;
+  showMenuButton?: boolean;
+}
+
 interface MainLayoutProps {
   children: React.ReactNode;
-  sidebar?: React.ReactNode;
-  header?: React.ReactNode;
+  sidebar?: React.ReactElement<SidebarProps>;
+  header?: React.ReactElement<HeaderProps>;
   className?: string;
 }
 
@@ -41,7 +51,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Sidebar */}
       {sidebar && (
         <div className="hidden lg:flex lg:flex-shrink-0">
-          {React.cloneElement(sidebar as React.ReactElement, {
+          {React.cloneElement(sidebar, {
             isOpen: true,
             onClose: closeSidebar,
           })}
@@ -51,7 +61,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Mobile sidebar */}
       {sidebar && (
         <div className="lg:hidden">
-          {React.cloneElement(sidebar as React.ReactElement, {
+          {React.cloneElement(sidebar, {
             isOpen: isSidebarOpen,
             onClose: closeSidebar,
           })}
@@ -63,7 +73,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         {/* Header */}
         {header && (
           <div className="relative z-10 flex-shrink-0">
-            {React.cloneElement(header as React.ReactElement, {
+            {React.cloneElement(header, {
               onMenuToggle: toggleSidebar,
               showMenuButton: true,
             })}
