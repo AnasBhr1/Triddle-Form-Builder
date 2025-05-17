@@ -1,23 +1,19 @@
 import { Router } from 'express';
 import { ResponseController } from '../controllers/responseController';
-import { authenticate, optionalAuthenticate } from '../middleware/auth';
-import { validate, formSchemas } from '../middleware/validation';
-import { formSubmissionLimiter } from '../middleware';
+import { authenticate, validate, formSchemas } from '../middleware/validation';
 
 const router = Router();
 
-// Public routes for form submissions
-router.post('/:id/responses', formSubmissionLimiter, validate(formSchemas.submitResponse), ResponseController.submitResponse);
+// Public routes
+router.post('/forms/:formId/submit', validate(formSchemas.submitResponse), ResponseController.submitResponse);
 
 // Protected routes - require authentication
-router.use(authenticate);
+router.get('/', authenticate, ResponseController.getResponses);
+router.get('/:id', authenticate, ResponseController.getResponseById);
+router.put('/:id', authenticate, validate(formSchemas.submitResponse), ResponseController.updateResponse);
+router.delete('/:id', authenticate, ResponseController.deleteResponse);
 
-// Response management
-router.get('/:id/responses', ResponseController.getResponses);
-router.get('/:id/responses/:responseId', ResponseController.getResponse);
-router.delete('/:id/responses/:responseId', ResponseController.deleteResponse);
-
-// Analytics
-router.get('/:id/analytics', ResponseController.getAnalytics);
+// Form-specific responses (for form owners/admins)
+router.get('/forms/:formId', authenticate, ResponseController.getFormResponses);
 
 export default router;

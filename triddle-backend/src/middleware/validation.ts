@@ -119,7 +119,71 @@ export const authSchemas = {
   // You can add other auth schemas as needed
 };
 
-// The key fix is in this validate function
+// Add form schemas
+export const formSchemas = {
+  createForm: Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().allow(''),
+    fields: Joi.array().items(
+      Joi.object({
+        type: Joi.string().valid('text', 'textarea', 'select', 'checkbox', 'radio', 'file').required(),
+        label: Joi.string().required(),
+        placeholder: Joi.string().allow(''),
+        required: Joi.boolean().default(false),
+        options: Joi.array().items(Joi.string()).when('type', {
+          is: Joi.string().valid('select', 'checkbox', 'radio'),
+          then: Joi.array().min(1).required(),
+          otherwise: Joi.array().optional(),
+        }),
+      })
+    ).min(1).required(),
+    isPublished: Joi.boolean().default(false),
+    expiresAt: Joi.date().allow(null),
+  }),
+  updateForm: Joi.object({
+    title: Joi.string(),
+    description: Joi.string().allow(''),
+    fields: Joi.array().items(
+      Joi.object({
+        type: Joi.string().valid('text', 'textarea', 'select', 'checkbox', 'radio', 'file'),
+        label: Joi.string(),
+        placeholder: Joi.string().allow(''),
+        required: Joi.boolean(),
+        options: Joi.array().items(Joi.string()),
+      })
+    ),
+    isPublished: Joi.boolean(),
+    expiresAt: Joi.date().allow(null),
+  }),
+  submitForm: Joi.object({
+    responses: Joi.array().items(
+      Joi.object({
+        fieldId: Joi.string().required(),
+        value: Joi.alternatives().try(
+          Joi.string(),
+          Joi.array().items(Joi.string()),
+          Joi.boolean(),
+        ).required(),
+      })
+    ).min(1).required(),
+  }),
+  submitResponse: Joi.object({
+    formId: Joi.string().required(),
+    answers: Joi.array().items(
+      Joi.object({
+        questionId: Joi.string().required(),
+        value: Joi.alternatives().try(
+          Joi.string(),
+          Joi.array().items(Joi.string()),
+          Joi.boolean(),
+          Joi.number()
+        ).required(),
+      })
+    ).min(1).required(),
+  }),
+};
+
+// The validate function
 export const validate = (schema: Joi.ObjectSchema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const { error } = schema.validate(req.body);
