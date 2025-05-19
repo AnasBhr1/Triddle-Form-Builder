@@ -86,6 +86,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     },
   ];
 
+  // Function to render icons consistently
+  const renderIcon = (Icon: React.FC<React.ComponentProps<'svg'>>, isActive: boolean) => {
+    return (
+      <Icon 
+        className={cn(
+          'h-5 w-5 text-gray-500 transition dark:text-gray-400',
+          isActive && 'text-indigo-600 dark:text-indigo-400'
+        )}
+      />
+    );
+  };
+
   return (
     <aside
       className={cn(
@@ -107,12 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                       location.pathname.includes(item.path) && 'bg-gray-100 dark:bg-gray-700'
                     )}
                   >
-                    <item.icon
-                      className={cn(
-                        'h-6 w-6 text-gray-500 transition dark:text-gray-400',
-                        location.pathname.includes(item.path) && 'text-indigo-600 dark:text-indigo-400'
-                      )}
-                    />
+                    {renderIcon(item.icon, location.pathname.includes(item.path))}
                     <span
                       className={cn(
                         'ml-3 text-left',
@@ -165,23 +172,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
                     )
                   }
                 >
-                  <item.icon
-                    className={({ isActive }: { isActive: boolean }) =>
-                      cn(
-                        'h-6 w-6 text-gray-500 transition dark:text-gray-400',
-                        isActive && 'text-indigo-600 dark:text-indigo-400'
-                      )
-                    }
-                  />
-                  <span
-                    className={cn(
-                      'ml-3',
-                      isSidebarOpen ? 'inline' : 'hidden',
-                      location.pathname === item.path && 'font-medium text-indigo-600 dark:text-indigo-400'
-                    )}
-                  >
-                    {item.name}
-                  </span>
+                  {({ isActive }) => (
+                    <>
+                      {renderIcon(item.icon, isActive)}
+                      <span
+                        className={cn(
+                          'ml-3',
+                          isSidebarOpen ? 'inline' : 'hidden',
+                          location.pathname === item.path && 'font-medium text-indigo-600 dark:text-indigo-400'
+                        )}
+                      >
+                        {item.name}
+                      </span>
+                    </>
+                  )}
                 </NavLink>
               )}
             </li>
@@ -203,15 +207,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
               )
             }
           >
-            <QuestionMarkCircleIcon
-              className={({ isActive }: { isActive: boolean }) =>
-                cn(
-                  'h-6 w-6 text-gray-500 dark:text-gray-400',
-                  isActive && 'text-indigo-600 dark:text-indigo-400'
-                )
-              }
-            />
-            <span className={cn('ml-3', isSidebarOpen ? 'inline' : 'hidden')}>Help Center</span>
+            {({ isActive }) => (
+              <>
+                {renderIcon(QuestionMarkCircleIcon, isActive)}
+                <span className={cn('ml-3', isSidebarOpen ? 'inline' : 'hidden')}>Help Center</span>
+              </>
+            )}
           </NavLink>
         </div>
 
