@@ -3,9 +3,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerSchema } from '../../utils/validation';
 import { useRegister } from '../../hooks/useAuth';
 import { Button, Input } from '../../components/ui';
+import { RegisterData } from '../../types'; // Import the existing RegisterData type
+
+// Define the registration schema
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -30,13 +45,27 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await registerUser({
+      // Log the data being sent
+      console.log("Registration data being sent:", {
         name: data.name,
+        email: data.email,
+        password: data.password
+      });
+      
+      // Split the name into firstName and lastName for API compatibility
+      const nameParts = data.name.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      await registerUser({
+        firstName,
+        lastName,
         email: data.email,
         password: data.password,
       });
       navigate('/dashboard');
     } catch (error: any) {
+      console.error("Registration error details:", error);
       setError('root', {
         type: 'manual',
         message: error.message || 'Registration failed. Please try again.',

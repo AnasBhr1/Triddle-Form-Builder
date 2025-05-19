@@ -8,8 +8,13 @@ import MainLayout from '../components/layout/MainLayout';
 // Auth Pages
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
+import RegisterPageDebug from '../pages/auth/RegisterPageDebug';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
+
+// Test Pages
+import ApiTestPage from '../pages/ApiTestPage';
+import TokenDebugPage from '../pages/TokenDebugPage';
 
 // Admin Pages
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
@@ -94,6 +99,20 @@ const AppRoutes: React.FC = () => {
           <GuestRoute>
             <RegisterPage />
           </GuestRoute>
+        } />
+        
+        <Route path="/register-debug" element={
+          <RegisterPageDebug />
+        } />
+        
+        {/* API Testing Route */}
+        <Route path="/api-test" element={
+          <ApiTestPage />
+        } />
+        
+        {/* Token Debug Route */}
+        <Route path="/token-debug" element={
+          <TokenDebugPage />
         } />
         
         <Route path="/forgot-password" element={
