@@ -82,6 +82,17 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Simple placeholder for Analytics page until you build a dedicated component
+const AnalyticsPlaceholder: React.FC = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Analytics Dashboard</h1>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <p className="text-gray-600 dark:text-gray-400 mb-4">Analytics features coming soon!</p>
+      <p className="text-gray-600 dark:text-gray-400">You'll be able to track form submissions, user engagement, and more with detailed charts and reports.</p>
+    </div>
+  </div>
+);
+
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -184,6 +195,26 @@ const AppRoutes: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         } />
+        
+        {/* NEW ROUTES - Start */}
+        {/* Main Responses page for all forms */}
+        <Route path="/responses" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormResponsesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Analytics page */}
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AnalyticsPlaceholder />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        {/* NEW ROUTES - End */}
         
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={
