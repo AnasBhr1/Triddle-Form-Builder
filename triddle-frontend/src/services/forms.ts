@@ -1,43 +1,69 @@
-import { apiClient } from '../lib/api-client';
-import { Form, ApiResponse, PaginationParams } from '../types';
+import axios from 'axios';
+import { Form, PaginationParams } from '../types';
+
+// Base API URL
+const API_URL = process.env.REACT_APP_API_URL || '';
+
+// Create axios instance with base options
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export interface CreateFormData {
   title: string;
   description?: string;
-  questions: any[];
-  settings: any;
+  fields?: any[];
+  settings?: any;
 }
 
-export class FormService {
-  static async createForm(data: CreateFormData): Promise<ApiResponse<Form>> {
-    return apiClient.post<Form>('/forms', data);
-  }
-
-  static async getForms(params?: PaginationParams): Promise<ApiResponse<Form[]>> {
-    return apiClient.get<Form[]>('/forms', params);
-  }
-
-  static async getForm(id: string): Promise<ApiResponse<Form>> {
-    return apiClient.get<Form>(`/forms/${id}`);
-  }
-
-  static async getFormBySlug(slug: string): Promise<ApiResponse<Form>> {
-    return apiClient.get<Form>(`/forms/public/${slug}`);
-  }
-
-  static async updateForm(id: string, data: Partial<Form>): Promise<ApiResponse<Form>> {
-    return apiClient.put<Form>(`/forms/${id}`, data);
-  }
-
-  static async deleteForm(id: string): Promise<ApiResponse<null>> {
-    return apiClient.delete<null>(`/forms/${id}`);
-  }
-
-  static async toggleFormStatus(id: string): Promise<ApiResponse<Form>> {
-    return apiClient.patch<Form>(`/forms/${id}/toggle-status`);
-  }
-
-  static async duplicateForm(id: string): Promise<ApiResponse<Form>> {
-    return apiClient.post<Form>(`/forms/${id}/duplicate`);
-  }
+export interface UpdateFormData {
+  title?: string;
+  description?: string;
+  fields?: any[];
+  settings?: any;
+  status?: string;
 }
+
+export const FormService = {
+  // Get all forms
+  getForms: async (params?: PaginationParams) => {
+    const response = await api.get('/forms', { params });
+    return response.data;
+  },
+
+  // Get a single form
+  getForm: async (formId: string) => {
+    const response = await api.get(`/forms/${formId}`);
+    return response.data;
+  },
+
+  // Create a new form
+  createForm: async (data: CreateFormData) => {
+    const response = await api.post('/forms', data);
+    return response.data;
+  },
+
+  // Update an existing form
+  updateForm: async (formId: string, data: UpdateFormData) => {
+    const response = await api.put(`/forms/${formId}`, data);
+    return response.data;
+  },
+
+  // Delete a form
+  deleteForm: async (formId: string) => {
+    const response = await api.delete(`/forms/${formId}`);
+    return response.data;
+  }
+};

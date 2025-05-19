@@ -1,195 +1,220 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { PageLoading } from '../components/ui';
+import { useAuthStore } from '../store/auth';
 
-// Layout components
-import { MainLayout, AuthLayout, Header, Sidebar } from '../components/layout';
+// Layout
+import MainLayout from '../components/layout/MainLayout';
 
-// Auth pages
+// Auth Pages
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 
-// Protected pages
-import DashboardPage from '../pages/Dashboardpage';
+// Admin Pages
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
+import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import AdminFormsPage from '../pages/admin/AdminFormsPage';
+
+// User Pages
+import DashboardPage from '../pages/dashboard/DashboardPage';
 import FormsPage from '../pages/forms/FormsPage';
 import FormBuilderPage from '../pages/forms/FormBuilderPage';
 import FormPreviewPage from '../pages/forms/FormPreviewPage';
 import FormResponsesPage from '../pages/forms/FormResponsesPage';
 import FormSettingsPage from '../pages/forms/FormSettingsPage';
+import ViewFormPage from '../pages/forms/ViewFormPage';
+import SubmitSuccessPage from '../pages/forms/SubmitSuccessPage';
+import ProfilePage from '../pages/user/ProfilePage';
+import SettingsPage from '../pages/user/SettingsPage';
 
-// Public pages
-import PublicFormPage from '../pages/PublicFormPage';
-import ThankYouPage from '../pages/ThankYouPage';
+// Error Pages
+import NotFoundPage from '../pages/error/NotFoundPage';
 
-// Admin pages
-import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
-import AdminUsersPage from '../pages/admin/AdminUsersPage';
-import AdminFormsPage from '../pages/admin/AdminFormsPage';
-
-// Protected Route component
 interface ProtectedRouteProps {
   children: React.ReactNode;
   adminOnly?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
-
-  // Show loading while checking authentication
-  if (isLoading) {
-    return <PageLoading />;
+  const { isAuthenticated, user, isInitialized, isLoading } = useAuthStore();
+  
+  // Wait for auth to initialize
+  if (!isInitialized || isLoading) {
+    return <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
   }
-
-  // Redirect to login if not authenticated
+  
+  // Not authenticated, redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  // Check admin access
+  
+  // Admin check
   if (adminOnly && user?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
-
+  
   return <>{children}</>;
 };
 
-// Public Route component (redirects to dashboard if already authenticated)
-interface PublicRouteProps {
+interface GuestRouteProps {
   children: React.ReactNode;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <PageLoading />;
+const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
+  const { isAuthenticated, isInitialized, isLoading } = useAuthStore();
+  
+  // Wait for auth to initialize
+  if (!isInitialized || isLoading) {
+    return <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
   }
-
+  
+  // Already authenticated, redirect to dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-
+  
   return <>{children}</>;
 };
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public form routes */}
-      <Route path="/f/:slug" element={<PublicFormPage />} />
-      <Route path="/f/:slug/thank-you" element={<ThankYouPage />} />
-
-      {/* Auth routes */}
-      <Route path="/login" element={
-        <PublicRoute>
-          <AuthLayout title="Sign in to your account" subtitle="Or create a new account to get started">
-            <LoginPage />
-          </AuthLayout>
-        </PublicRoute>
-      } />
-      
-      <Route path="/register" element={
-        <PublicRoute>
-          <AuthLayout title="Create your account" subtitle="Already have an account? Sign in">
-            <RegisterPage />
-          </AuthLayout>
-        </PublicRoute>
-      } />
-      
-      <Route path="/forgot-password" element={
-        <PublicRoute>
-          <AuthLayout title="Reset your password" subtitle="Enter your email to receive reset instructions">
-            <ForgotPasswordPage />
-          </AuthLayout>
-        </PublicRoute>
-      } />
-
-      {/* Protected routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <DashboardPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/forms" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <FormsPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/form/new" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <FormBuilderPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/form/:id/edit" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <FormBuilderPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/form/:id/preview" element={
-        <ProtectedRoute>
-          <FormPreviewPage />
-        </ProtectedRoute>
-      } />
-
-      <Route path="/form/:id/responses" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <FormResponsesPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/form/:id/settings" element={
-        <ProtectedRoute>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <FormSettingsPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      {/* Admin routes */}
-      <Route path="/admin/dashboard" element={
-        <ProtectedRoute adminOnly>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <AdminDashboardPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/admin/users" element={
-        <ProtectedRoute adminOnly>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <AdminUsersPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/admin/forms" element={
-        <ProtectedRoute adminOnly>
-          <MainLayout header={<Header />} sidebar={<Sidebar isOpen={false} onClose={() => {}} />}>
-            <AdminFormsPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      {/* Default redirects */}
+      {/* Redirect root to dashboard or login */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+        
+        {/* Auth Routes (Guest Only) */}
+        <Route path="/login" element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        } />
+        
+        <Route path="/register" element={
+          <GuestRoute>
+            <RegisterPage />
+          </GuestRoute>
+        } />
+        
+        <Route path="/forgot-password" element={
+          <GuestRoute>
+            <ForgotPasswordPage />
+          </GuestRoute>
+        } />
+        
+        <Route path="/reset-password/:token" element={
+          <GuestRoute>
+            <ResetPasswordPage />
+          </GuestRoute>
+        } />
+        
+        {/* Dashboard */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <DashboardPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Forms */}
+        <Route path="/forms" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/form/new" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormBuilderPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/form/:id/edit" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormBuilderPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/form/:id/preview" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormPreviewPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/form/:id/responses" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormResponsesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/form/:id/settings" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormSettingsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute adminOnly>
+            <MainLayout>
+              <AdminDashboardPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/users" element={
+          <ProtectedRoute adminOnly>
+            <MainLayout>
+              <AdminUsersPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/forms" element={
+          <ProtectedRoute adminOnly>
+            <MainLayout>
+              <AdminFormsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        {/* User Profile & Settings */}
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <ProfilePage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <SettingsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Public Form */}
+        <Route path="/f/:formId" element={<ViewFormPage />} />
+        <Route path="/f/:formId/success" element={<SubmitSuccessPage />} />
+        
+        {/* 404 Page */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
   );
 };
 

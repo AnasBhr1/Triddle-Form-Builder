@@ -1,93 +1,35 @@
-import React from 'react';
-import { cn } from '../../utils';
-
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-interface HeaderProps {
-  onMenuToggle?: () => void;
-  showMenuButton?: boolean;
-}
+import React, { useState } from 'react';
+import Header from './Header';
+import Sidebar from './Sidebar';
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  sidebar?: React.ReactElement<SidebarProps>;
-  header?: React.ReactElement<HeaderProps>;
-  className?: string;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({
-  children,
-  sidebar,
-  header,
-  className,
-}) => {
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
-  // Close sidebar on route change (mobile)
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
-    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
-      {/* Sidebar */}
-      {sidebar && (
-        <div className="hidden lg:flex lg:flex-shrink-0">
-          {React.cloneElement(sidebar, {
-            isOpen: true,
-            onClose: closeSidebar,
-          })}
-        </div>
-      )}
-
-      {/* Mobile sidebar */}
-      {sidebar && (
-        <div className="lg:hidden">
-          {React.cloneElement(sidebar, {
-            isOpen: isSidebarOpen,
-            onClose: closeSidebar,
-          })}
-        </div>
-      )}
-
-      {/* Main content area */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        {/* Header */}
-        {header && (
-          <div className="relative z-10 flex-shrink-0">
-            {React.cloneElement(header, {
-              onMenuToggle: toggleSidebar,
-              showMenuButton: true,
-            })}
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar 
+        isSidebarOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
+      />
+      
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header 
+          isSidebarOpen={isSidebarOpen} 
+          toggleSidebar={toggleSidebar} 
+        />
+        
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 pt-20">
+          <div className="container mx-auto">
+            {children}
           </div>
-        )}
-
-        {/* Page content */}
-        <main
-          className={cn(
-            'flex-1 relative overflow-y-auto focus:outline-none',
-            className
-          )}
-        >
-          {children}
         </main>
       </div>
     </div>

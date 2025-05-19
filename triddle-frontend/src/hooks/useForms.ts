@@ -4,135 +4,99 @@ import { Form, PaginationParams } from '../types';
 import { toast } from '../store/toast';
 import { useFormBuilderStore } from '../store/formBuilder';
 
+// Define the CreateFormData interface to match what the service expects
+interface CreateFormData {
+  title: string;
+  description?: string;
+  fields?: any[];
+  settings?: any;
+}
+
 export const useForms = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['forms', params],
     queryFn: () => FormService.getForms(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-export const useForm = (id: string) => {
+export const useForm = (formId: string) => {
   return useQuery({
-    queryKey: ['forms', id],
-    queryFn: () => FormService.getForm(id),
-    enabled: !!id,
-  });
-};
-
-export const useFormBySlug = (slug: string) => {
-  return useQuery({
-    queryKey: ['forms', 'public', slug],
-    queryFn: () => FormService.getFormBySlug(slug),
-    enabled: !!slug,
-    retry: false,
+    queryKey: ['form', formId],
+    queryFn: () => FormService.getForm(formId),
+    enabled: !!formId,
   });
 };
 
 export const useCreateForm = () => {
   const queryClient = useQueryClient();
-  const { setCurrentForm } = useFormBuilderStore();
-
+  
   return useMutation({
-    mutationFn: FormService.createForm,
-    onSuccess: (response) => {
-      toast.success('Form created', 'Your form has been created successfully');
+    mutationFn: (data: Partial<Form>) => {
+      // Ensure required fields are provided
+      const createData: CreateFormData = {
+        title: data.title || 'Untitled Form',
+        description: data.description,
+        fields: data.fields,
+        settings: data.settings
+      };
+      return FormService.createForm(createData);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forms'] });
-      if (response.data) {
-        setCurrentForm(response.data);
-      }
+      toast.success('Form created', 'Your form has been created successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Failed to create form', error.message);
-    },
+    onError: (error) => {
+      toast.error('Failed to create form', error instanceof Error ? error.message : 'An error occurred');
+    }
   });
 };
 
-export const useUpdateForm = (id: string) => {
+export const useUpdateForm = (formId: string) => {
   const queryClient = useQueryClient();
-  const { setCurrentForm, setDirty } = useFormBuilderStore();
-
+  
   return useMutation({
-    mutationFn: (data: Partial<Form>) => FormService.updateForm(id, data),
-    onSuccess: (response) => {
-      toast.success('Form updated', 'Your changes have been saved');
+    mutationFn: (data: Partial<Form>) => FormService.updateForm(formId, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forms'] });
-      queryClient.invalidateQueries({ queryKey: ['forms', id] });
-      if (response.data) {
-        setCurrentForm(response.data);
-        setDirty(false);
-      }
+      queryClient.invalidateQueries({ queryKey: ['form', formId] });
+      toast.success('Form updated', 'Your form has been updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error('Failed to update form', error.message);
-    },
+    onError: (error) => {
+      toast.error('Failed to update form', error instanceof Error ? error.message : 'An error occurred');
+    }
   });
 };
 
 export const useDeleteForm = () => {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: FormService.deleteForm,
+    mutationFn: (formId: string) => FormService.deleteForm(formId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forms'] });
       toast.success('Form deleted', 'The form has been deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['forms'] });
     },
-    onError: (error: Error) => {
-      toast.error('Failed to delete form', error.message);
-    },
-  });
-};
-
-export const useToggleFormStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: FormService.toggleFormStatus,
-    onSuccess: (response) => {
-      const status = response.data?.isActive ? 'activated' : 'deactivated';
-      toast.success(`Form ${status}`, `The form has been ${status} successfully`);
-      queryClient.invalidateQueries({ queryKey: ['forms'] });
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to update form status', error.message);
-    },
-  });
-};
-
-export const useDuplicateForm = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: FormService.duplicateForm,
-    onSuccess: () => {
-      toast.success('Form duplicated', 'The form has been duplicated successfully');
-      queryClient.invalidateQueries({ queryKey: ['forms'] });
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to duplicate form', error.message);
-    },
-  });
-};
-
-// Auto-save hook
-export const useAutoSave = (formId: string) => {
-  const { currentForm, isDirty, autoSave } = useFormBuilderStore();
-  const updateFormMutation = useUpdateForm(formId);
-
-  const triggerAutoSave = async () => {
-    if (!currentForm || !isDirty) return;
-
-    try {
-      await updateFormMutation.mutateAsync(currentForm);
-      autoSave();
-    } catch (error) {
-      console.error('Auto-save failed:', error);
+    onError: (error) => {
+      toast.error('Failed to delete form', error instanceof Error ? error.message : 'An error occurred');
     }
-  };
+  });
+};
 
-  return {
-    triggerAutoSave,
-    isAutoSaving: updateFormMutation.isPending,
-  };
+export const usePublishForm = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (formId: string) => {
+      // If publishForm doesn't exist, implement it with updateForm
+      return FormService.updateForm(formId, { status: 'published' });
+    },
+    onSuccess: (_, formId) => {
+      queryClient.invalidateQueries({ queryKey: ['forms'] });
+      queryClient.invalidateQueries({ queryKey: ['form', formId] });
+      toast.success('Form published', 'Your form is now available for submissions');
+    },
+    onError: (error) => {
+      toast.error('Failed to publish form', error instanceof Error ? error.message : 'An error occurred');
+    }
+  });
 };

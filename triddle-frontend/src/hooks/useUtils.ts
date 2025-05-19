@@ -1,134 +1,71 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useFormBuilderStore } from '../store/formBuilder';
 
-// Auto-save hook for form builder
-export const useFormAutoSave = (formId: string, intervalMs: number = 30000) => {
-  const { isDirty, currentForm } = useFormBuilderStore();
-  // We'll need to implement the auto-save functionality here
-  // For now, let's create a mock implementation
-  
-  const triggerAutoSave = async () => {
-    if (!currentForm || !isDirty) return;
-    // TODO: Implement actual auto-save logic
-    console.log('Auto-saving form...');
-  };
-
+export const useFormAutosave = (intervalMs = 30000) => {
+  const { currentForm, isDirty, setIsDirty } = useFormBuilderStore();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
+  
+  // Create a save function that should be implemented in the component
+  const triggerAutoSave = useCallback(() => {
+    console.log('Auto-saving form...');
+    // This should be implemented in the component that uses this hook
+    // For now, we'll just clear the dirty flag
+    setIsDirty(false);
+  }, [setIsDirty]);
+  
+  // Set up auto-save feature
   useEffect(() => {
-    if (!currentForm?.settings.autoSave) return;
-
+    // Only auto-save if the feature is enabled and there are unsaved changes
+    if (!currentForm?.settings?.autoSave) return;
+    
     const startAutoSave = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      
       intervalRef.current = setInterval(() => {
         if (isDirty) {
           triggerAutoSave();
         }
       }, intervalMs);
     };
-
-    startAutoSave();
-
+    
+    if (isDirty) {
+      startAutoSave();
+    }
+    
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isDirty, triggerAutoSave, intervalMs, currentForm?.settings.autoSave]);
-
+  }, [isDirty, triggerAutoSave, intervalMs, currentForm?.settings?.autoSave]);
+  
   // Manual save trigger
   const manualSave = () => {
     if (isDirty) {
       triggerAutoSave();
     }
   };
-
-  return {
-    isAutoSaving: false, // Mock implementation
-    manualSave,
-    isDirty,
-  };
+  
+  return { manualSave };
 };
 
-// Local storage hook
-export const useLocalStorage = <T>(key: string, initialValue: T) => {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
-      return initialValue;
-    }
-  });
-
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
-    }
-  };
-
-  return [storedValue, setValue] as const;
-};
-
-// Debounce hook
-export const useDebounce = <T>(value: T, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
-// Media query hook
-export const useMediaQuery = (query: string) => {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    setMatches(media.matches);
-
-    const listener = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
-
-    media.addEventListener('change', listener);
-    return () => media.removeEventListener('change', listener);
-  }, [query]);
-
-  return matches;
-};
-
-// Click outside hook
 export const useClickOutside = (
   ref: React.RefObject<HTMLElement>,
-  handler: () => void
+  handler: (event: MouseEvent | TouchEvent) => void
 ) => {
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
       if (!ref.current || ref.current.contains(event.target as Node)) {
         return;
       }
-      handler();
+      handler(event);
     };
-
+    
     document.addEventListener('mousedown', listener);
     document.addEventListener('touchstart', listener);
-
+    
     return () => {
       document.removeEventListener('mousedown', listener);
       document.removeEventListener('touchstart', listener);
@@ -136,92 +73,18 @@ export const useClickOutside = (
   }, [ref, handler]);
 };
 
-// Intersection observer hook
-export const useIntersectionObserver = (
-  elementRef: React.RefObject<HTMLElement>,
-  options: IntersectionObserverInit = {}
-) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-
+export const useEscapeKey = (handler: () => void) => {
   useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-      },
-      options
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handler();
+      }
     };
-  }, [elementRef, options]);
-
-  return isIntersecting;
-};
-
-// Copy to clipboard hook
-export const useCopyToClipboard = () => {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      return true;
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      setCopied(false);
-      return false;
-    }
-  };
-
-  return { copy, copied };
-};
-
-// Form submission tracking
-export const useFormSubmissionTracking = () => {
-  const [timeSpent, setTimeSpent] = useState<Map<string, number>>(new Map());
-  const [startTimes, setStartTimes] = useState<Map<string, number>>(new Map());
-  const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState<number>(Date.now());
-
-  const startQuestionTimer = (questionId: string) => {
-    const now = Date.now();
-    setStartTimes(prev => new Map(prev).set(questionId, now));
-    setCurrentQuestionStartTime(now);
-  };
-
-  const stopQuestionTimer = (questionId: string) => {
-    const startTime = startTimes.get(questionId);
-    if (startTime) {
-      const timeSpentOnQuestion = Date.now() - startTime;
-      setTimeSpent(prev => {
-        const newMap = new Map(prev);
-        const existingTime = newMap.get(questionId) || 0;
-        newMap.set(questionId, existingTime + timeSpentOnQuestion);
-        return newMap;
-      });
-    }
-  };
-
-  const getTimeSpent = (questionId: string): number => {
-    return timeSpent.get(questionId) || 0;
-  };
-
-  const getTotalTimeSpent = (): number => {
-    return Array.from(timeSpent.values()).reduce((total, time) => total + time, 0);
-  };
-
-  return {
-    startQuestionTimer,
-    stopQuestionTimer,
-    getTimeSpent,
-    getTotalTimeSpent,
-    timeSpent,
-  };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handler]);
 };

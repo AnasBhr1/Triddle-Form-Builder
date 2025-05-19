@@ -1,30 +1,33 @@
-import { apiClient } from '../lib/api-client';
-import { FileUpload, ApiResponse } from '../types';
+import axios from 'axios';
 
-export class UploadService {
-  static async uploadFile(
-    file: File,
-    validation?: {
-      maxSize: number;
-      allowedTypes: string[];
-      multiple: boolean;
-    }
-  ): Promise<ApiResponse<FileUpload>> {
-    const endpoint = validation ? '/uploads/form-file' : '/uploads/single';
-    const additionalData = validation ? {
-      maxSize: validation.maxSize.toString(),
-      allowedTypes: JSON.stringify(validation.allowedTypes),
-      multiple: validation.multiple.toString()
-    } : undefined;
+// Base API URL
+const API_URL = process.env.REACT_APP_API_URL || '';
 
-    return apiClient.uploadFile<FileUpload>(endpoint, file, additionalData);
+// Create axios instance with base options
+const api = axios.create({
+  baseURL: API_URL
+  // Don't set Content-Type header for file uploads - it will be set automatically
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  static async uploadMultipleFiles(files: File[]): Promise<ApiResponse<FileUpload[]>> {
-    return apiClient.uploadFiles<FileUpload[]>('/uploads/multiple', files);
-  }
+export const UploadService = {
+  // Upload a file
+  uploadFile: async (formData: FormData) => {
+    const response = await api.post('/uploads', formData);
+    return response.data;
+  },
 
-  static async deleteFile(cloudinaryId: string): Promise<ApiResponse<null>> {
-    return apiClient.delete<null>(`/uploads/${cloudinaryId}`);
+  // Delete a file
+  deleteFile: async (fileId: string) => {
+    const response = await api.delete(`/uploads/${fileId}`);
+    return response.data;
   }
-}
+};

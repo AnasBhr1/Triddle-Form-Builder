@@ -1,132 +1,168 @@
-import { ApiResponse } from '../types';
+// Define ApiResponse locally instead of importing from types
+interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success: boolean;
+  status: number;
+}
 
 class ApiClient {
   private baseURL: string;
+  private headers: Record<string, string>;
 
-  constructor(baseURL: string = process.env.REACT_APP_API_URL || 'http://localhost:5000/api') {
+  constructor(baseURL: string) {
     this.baseURL = baseURL;
+    this.headers = {
+      'Content-Type': 'application/json',
+    };
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
-    const url = `${this.baseURL}${endpoint}`;
-    
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include', // Include cookies for authentication
-      ...options,
-    };
-
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('API request error:', error);
-      throw error;
+  // Set authorization token
+  setAuthToken(token: string | null): void {
+    if (token) {
+      this.headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete this.headers['Authorization'];
     }
   }
 
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
-    const searchParams = new URLSearchParams();
+  // Add custom header
+  setHeader(key: string, value: string): void {
+    this.headers[key] = value;
+  }
+
+  // Remove header
+  removeHeader(key: string): void {
+    delete this.headers[key];
+  }
+
+  // GET request
+  async get<T>(path: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+    const url = new URL(`${this.baseURL}${path}`);
     
     if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, String(value));
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null) {
+          url.searchParams.append(key, params[key]);
         }
       });
     }
     
-    const queryString = searchParams.toString();
-    const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: this.headers,
+    });
     
-    return this.request<T>(url);
+    return this.handleResponse<T>(response);
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
+  // POST request
+  async post<T>(path: string, data?: any): Promise<ApiResponse<T>> {
+    const response = await fetch(`${this.baseURL}${path}`, {
       method: 'POST',
+      headers: this.headers,
       body: data ? JSON.stringify(data) : undefined,
     });
+    
+    return this.handleResponse<T>(response);
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
+  // PUT request
+  async put<T>(path: string, data?: any): Promise<ApiResponse<T>> {
+    const response = await fetch(`${this.baseURL}${path}`, {
       method: 'PUT',
+      headers: this.headers,
       body: data ? JSON.stringify(data) : undefined,
     });
+    
+    return this.handleResponse<T>(response);
   }
 
-  async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
+  // PATCH request
+  async patch<T>(path: string, data?: any): Promise<ApiResponse<T>> {
+    const response = await fetch(`${this.baseURL}${path}`, {
       method: 'PATCH',
+      headers: this.headers,
       body: data ? JSON.stringify(data) : undefined,
     });
+    
+    return this.handleResponse<T>(response);
   }
 
-  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
+  // DELETE request
+  async delete<T>(path: string): Promise<ApiResponse<T>> {
+    const response = await fetch(`${this.baseURL}${path}`, {
       method: 'DELETE',
+      headers: this.headers,
     });
+    
+    return this.handleResponse<T>(response);
   }
 
-  // File upload method
-  async uploadFile<T>(
-    endpoint: string,
-    file: File,
-    additionalData?: Record<string, any>
-  ): Promise<ApiResponse<T>> {
-    const formData = new FormData();
-    formData.append('file', file);
+  // File upload
+  async upload<T>(path: string, formData: FormData): Promise<ApiResponse<T>> {
+    // Remove content-type header for file uploads
+    const headers = { ...this.headers };
+    delete headers['Content-Type'];
     
-    if (additionalData) {
-      Object.entries(additionalData).forEach(([key, value]) => {
-        formData.append(key, String(value));
-      });
-    }
-
-    return this.request<T>(endpoint, {
+    const response = await fetch(`${this.baseURL}${path}`, {
       method: 'POST',
-      headers: {}, // Don't set Content-Type for FormData
+      headers,
       body: formData,
     });
+    
+    return this.handleResponse<T>(response);
   }
 
-  // Upload multiple files
-  async uploadFiles<T>(
-    endpoint: string,
-    files: File[],
-    additionalData?: Record<string, any>
-  ): Promise<ApiResponse<T>> {
-    const formData = new FormData();
+  // Handle response
+  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+    const status = response.status;
     
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-    
-    if (additionalData) {
-      Object.entries(additionalData).forEach(([key, value]) => {
-        formData.append(key, String(value));
-      });
+    try {
+      const data = await response.json();
+      
+      if (status >= 200 && status < 300) {
+        return {
+          data: data.data as T,
+          message: data.message,
+          success: true,
+          status
+        };
+      } else {
+        const error = {
+          data: data.data as T,
+          message: data.message || 'An error occurred',
+          success: false,
+          status
+        };
+        
+        throw error;
+      }
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        // JSON parse error
+        throw {
+          data: null as unknown as T,
+          message: 'Invalid response format',
+          success: false,
+          status
+        };
+      }
+      
+      throw error;
     }
-
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      headers: {}, // Don't set Content-Type for FormData
-      body: formData,
-    });
   }
 }
 
-export const apiClient = new ApiClient();
+// Create a single instance of the API client
+const apiClient = new ApiClient(
+  process.env.REACT_APP_API_URL || 'http://localhost:8000/api'
+);
+
+// Initialize with token from localStorage
+const token = localStorage.getItem('token');
+if (token) {
+  apiClient.setAuthToken(token);
+}
+
+export default apiClient;

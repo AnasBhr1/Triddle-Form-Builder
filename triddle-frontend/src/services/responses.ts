@@ -1,57 +1,53 @@
-import { apiClient } from '../lib/api-client';
-import { FormResponse, FormAnalytics, ApiResponse, PaginationParams } from '../types';
+import axios from 'axios';
+import { PaginationParams } from '../types';
+
+// Base API URL
+const API_URL = process.env.REACT_APP_API_URL || '';
+
+// Create axios instance with base options
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export interface SubmitResponseData {
-  responses: Array<{
-    questionId: string;
-    answer: any;
-    timeSpent: number;
-  }>;
-  status: 'incomplete' | 'completed' | 'abandoned';
-  currentQuestionIndex: number;
+  values: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
-export class ResponseService {
-  static async submitResponse(
-    formId: string,
-    data: SubmitResponseData,
-    responseId?: string
-  ): Promise<ApiResponse<{
-    responseId: string;
-    status: string;
-    redirectUrl?: string;
-  }>> {
-    const headers: Record<string, string> = {};
-    
-    if (responseId) {
-      headers['x-response-id'] = responseId;
-    }
-    
-    return apiClient.post(`/forms/${formId}/responses`, data);
-  }
+export const ResponseService = {
+  // Get all responses for a form
+  getResponses: async (formId: string, params?: PaginationParams) => {
+    const response = await api.get(`/forms/${formId}/responses`, { params });
+    return response.data;
+  },
 
-  static async getResponses(
-    formId: string,
-    params?: PaginationParams
-  ): Promise<ApiResponse<FormResponse[]>> {
-    return apiClient.get<FormResponse[]>(`/forms/${formId}/responses`, params);
-  }
+  // Get a single response
+  getResponse: async (responseId: string, params: any) => {
+    const response = await api.get(`/responses/${responseId}`, { params });
+    return response.data;
+  },
 
-  static async getResponse(
-    formId: string,
-    responseId: string
-  ): Promise<ApiResponse<FormResponse>> {
-    return apiClient.get<FormResponse>(`/forms/${formId}/responses/${responseId}`);
-  }
+  // Submit a response to a form
+  submitResponse: async (formId: string, data: SubmitResponseData) => {
+    const response = await api.post(`/forms/${formId}/responses`, data);
+    return response.data;
+  },
 
-  static async deleteResponse(
-    formId: string,
-    responseId: string
-  ): Promise<ApiResponse<null>> {
-    return apiClient.delete<null>(`/forms/${formId}/responses/${responseId}`);
+  // Delete a response
+  deleteResponse: async (responseId: string, formId: string) => {
+    const response = await api.delete(`/forms/${formId}/responses/${responseId}`);
+    return response.data;
   }
-
-  static async getAnalytics(formId: string): Promise<ApiResponse<FormAnalytics>> {
-    return apiClient.get<FormAnalytics>(`/forms/${formId}/analytics`);
-  }
-}
+};

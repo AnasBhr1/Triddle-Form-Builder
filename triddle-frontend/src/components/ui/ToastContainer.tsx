@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToastStore } from '../../store/toast';
+import { useToastStore, type Toast } from '../../store/toast';
 import { cn } from '../../utils';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -8,38 +8,50 @@ const toastIcons = {
   success: CheckCircleIcon,
   error: XCircleIcon,
   warning: ExclamationTriangleIcon,
-  info: InformationCircleIcon,
+  info: InformationCircleIcon
 };
 
 const toastColors = {
-  success: 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
-  error: 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
-  warning: 'bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800',
-  info: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
+  success: 'bg-green-50 border-green-200',
+  error: 'bg-red-50 border-red-200',
+  warning: 'bg-yellow-50 border-yellow-200',
+  info: 'bg-blue-50 border-blue-200'
 };
 
 const iconColors = {
-  success: 'text-green-400',
-  error: 'text-red-400',
-  warning: 'text-yellow-400',
-  info: 'text-blue-400',
+  success: 'text-green-500',
+  error: 'text-red-500',
+  warning: 'text-yellow-500',
+  info: 'text-blue-500'
 };
 
-const ToastContainer: React.FC = () => {
-  const { toasts, removeToast } = useToastStore();
+export const ToastContainer: React.FC = () => {
+  const toasts = useToastStore((state) => state.toasts);
+  const removeToast = useToastStore((state) => state.removeToast);
+
+  React.useEffect(() => {
+    toasts.forEach((toast) => {
+      if (toast.duration) {
+        const timer = setTimeout(() => {
+          removeToast(toast.id);
+        }, toast.duration);
+        return () => clearTimeout(timer);
+      }
+    });
+  }, [toasts, removeToast]);
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
       <AnimatePresence>
-        {toasts.map((toast) => {
+        {toasts.map((toast: Toast) => {
           const Icon = toastIcons[toast.type];
           
           return (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, translateX: 100, scale: 0.95 }}
-              animate={{ opacity: 1, translateX: 0, scale: 1 }}
-              exit={{ opacity: 0, translateX: 100, scale: 0.95 }}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className={cn(
                 'max-w-sm w-full rounded-lg border p-4 shadow-lg',
@@ -53,17 +65,17 @@ const ToastContainer: React.FC = () => {
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium">{toast.title}</p>
                   {toast.message && (
-                    <p className="mt-1 text-sm opacity-90">{toast.message}</p>
+                    <p className="mt-1 text-sm text-gray-600">{toast.message}</p>
                   )}
                 </div>
-                <div className="ml-4 flex-shrink-0">
-                  <button
-                    onClick={() => removeToast(toast.id)}
-                    className="inline-flex rounded-md opacity-70 hover:opacity-100 transition-opacity"
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="ml-4 inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+                  onClick={() => removeToast(toast.id)}
+                >
+                  <span className="sr-only">Close</span>
+                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
               </div>
             </motion.div>
           );
@@ -72,5 +84,3 @@ const ToastContainer: React.FC = () => {
     </div>
   );
 };
-
-export default ToastContainer;

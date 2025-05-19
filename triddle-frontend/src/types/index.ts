@@ -1,142 +1,101 @@
-// Add these basic types to make the app compile
-
-export enum UserRole {
-  GUEST = 'guest',
-  USER = 'user',
-  ADMIN = 'admin'
-}
-
+export interface FormResponse {
+  id: string;
+  formId: string;
+  values: Record<string, any>;
+  metadata?: {
+    userAgent?: string;
+    ipAddress?: string;
+    submittedAt: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}// Export types here
 export interface User {
-  _id: string;
-  firstName: string;
-  lastName: string;
+  id: string;
   email: string;
-  role: UserRole;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string;
-  isEmailVerified: boolean;
-  isActive: boolean;
-  lastLogin?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Basic interfaces to make the app compile
-export interface Form {
-  _id: string;
-  title: string;
-  description?: string;
-  slug: string;
-  createdBy: string | User;
-  questions: FormQuestion[];
-  settings: FormSettings;
-  isActive: boolean;
-  responses: string[];
-  responseCount?: number;
-  createdAt: Date;
-  updatedAt: Date;
+export interface LoginCredentials {
+  email: string;
+  password: string;
 }
 
-export interface FormQuestion {
-  _id?: string;
-  title: string;
-  description?: string;
-  type: string;
+export interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+// API Response types
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success: boolean;
+  status: number;
+}
+
+export type FormFieldType = 'text' | 'email' | 'number' | 'select' | 'checkbox' | 'radio' | 'textarea' | 'date' | 'file';
+
+export interface FormField {
+  id: string;
+  type: FormFieldType;
+  label: string;
+  placeholder?: string;
   required: boolean;
   order: number;
-  options?: string[];
-  validation?: any;
-  fileUpload?: any;
+  options?: { label: string; value: string }[];
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+  defaultValue?: any;
+  settings?: Record<string, any>;
 }
 
 export interface FormSettings {
-  isPublic: boolean;
-  isPasswordProtected: boolean;
-  password?: string;
-  theme: string;
-  logo?: string;
-  backgroundColor: string;
-  textColor: string;
-  buttonColor: string;
+  allowMultipleSubmissions: boolean;
+  showProgressBar: boolean;
   redirectUrl?: string;
-  autoSave: boolean;
-  enableAnalytics: boolean;
-  multiLanguage: boolean;
-  languages: string[];
+  notificationEmails?: string[];
+  submitButtonText: string;
+  successMessage: string;
+  autoSave?: boolean;
 }
 
-export interface FormResponse {
-  _id: string;
-  formId: string;
-  responses: any[];
-  metadata: any;
-  status: string;
-  timeStarted: Date;
-  timeCompleted?: Date;
-  totalTimeSpent: number;
-  currentQuestionIndex: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface FormAnalytics {
-  overview: any;
-  deviceStats: any[];
-  geoStats: any[];
-  completionByDate: any[];
+export interface Form {
+  id: string;
+  title: string;
+  description?: string;
+  fields: FormField[];
+  settings?: FormSettings;
+  status: 'draft' | 'published' | 'archived';
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
 }
 
 export interface PaginationParams {
   page?: number;
   limit?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
   search?: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
 }
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  error?: string | any;
-  meta?: {
-    pagination?: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
   };
-}
-
-export interface FileUpload {
-  originalName: string;
-  filename: string;
-  url: string;
-  size: number;
-  mimetype: string;
-  cloudinaryId: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface FormBuilderState {
-  currentForm: Form | null;
-  currentQuestionIndex: number;
-  isPreviewMode: boolean;
-  isDirty: boolean;
-  lastSaved?: Date;
-}
-
-export interface Toast {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
-  message: string;
-  duration?: number;
 }

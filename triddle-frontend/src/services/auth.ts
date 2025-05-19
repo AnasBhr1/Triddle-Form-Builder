@@ -1,18 +1,25 @@
-import { apiClient } from '../lib/api-client';
-import { User, ApiResponse } from '../types';
+import axios from 'axios';
+import type { LoginCredentials, RegisterData } from '../types';
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
+// Base API URL
+const API_URL = process.env.REACT_APP_API_URL || '';
 
-export interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+// Create axios instance with base options
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export interface ForgotPasswordData {
   email: string;
@@ -24,37 +31,49 @@ export interface ResetPasswordData {
   confirmPassword: string;
 }
 
-export interface AuthResponse {
-  user: User;
-  accessToken: string;
-}
+// Export LoginCredentials and RegisterData types
+export type { LoginCredentials, RegisterData };
 
-export class AuthService {
-  static async register(data: RegisterData): Promise<ApiResponse<AuthResponse>> {
-    return apiClient.post<AuthResponse>('/auth/register', data);
-  }
+export const AuthService = {
+  // Login user
+  login: async (credentials: LoginCredentials) => {
+    const response = await api.post('/auth/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data;
+  },
 
-  static async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    return apiClient.post<AuthResponse>('/auth/login', credentials);
-  }
+  // Register user
+  register: async (data: RegisterData) => {
+    const response = await api.post('/auth/register', data);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data;
+  },
 
-  static async logout(): Promise<ApiResponse<null>> {
-    return apiClient.post<null>('/auth/logout');
-  }
+  // Logout user
+  logout: async () => {
+    localStorage.removeItem('token');
+    return { success: true };
+  },
 
-  static async getMe(): Promise<ApiResponse<User>> {
-    return apiClient.get<User>('/auth/me');
-  }
+  // Get current user
+  getCurrentUser: async () => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
 
-  static async refreshToken(): Promise<ApiResponse<{ accessToken: string }>> {
-    return apiClient.post<{ accessToken: string }>('/auth/refresh-token');
-  }
+  // Forgot password
+  forgotPassword: async (data: ForgotPasswordData) => {
+    const response = await api.post('/auth/forgot-password', data);
+    return response.data;
+  },
 
-  static async forgotPassword(data: ForgotPasswordData): Promise<ApiResponse<null>> {
-    return apiClient.post<null>('/auth/forgot-password', data);
+  // Reset password
+  resetPassword: async (data: ResetPasswordData) => {
+    const response = await api.post('/auth/reset-password', data);
+    return response.data;
   }
-
-  static async resetPassword(data: ResetPasswordData): Promise<ApiResponse<null>> {
-    return apiClient.post<null>('/auth/reset-password', data);
-  }
-}
+};

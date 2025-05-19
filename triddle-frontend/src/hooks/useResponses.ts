@@ -3,52 +3,57 @@ import { ResponseService, SubmitResponseData } from '../services/responses';
 import { PaginationParams } from '../types';
 import { toast } from '../store/toast';
 
+// Extend SubmitResponseData to include formId
+interface ExtendedSubmitResponseData extends SubmitResponseData {
+  formId: string;
+}
+
 export const useResponses = (formId: string, params?: PaginationParams) => {
   return useQuery({
-    queryKey: ['forms', formId, 'responses', params],
+    queryKey: ['responses', formId, params],
     queryFn: () => ResponseService.getResponses(formId, params),
     enabled: !!formId,
   });
 };
 
-export const useResponse = (formId: string, responseId: string) => {
+export const useResponse = (responseId: string) => {
   return useQuery({
-    queryKey: ['forms', formId, 'responses', responseId],
-    queryFn: () => ResponseService.getResponse(formId, responseId),
-    enabled: !!formId && !!responseId,
+    queryKey: ['response', responseId],
+    queryFn: () => ResponseService.getResponse(responseId, {}), // Adding an empty object as second parameter
+    enabled: !!responseId,
   });
 };
 
-export const useSubmitResponse = (formId: string) => {
-  return useMutation({
-    mutationFn: ({ data, responseId }: { data: SubmitResponseData; responseId?: string }) =>
-      ResponseService.submitResponse(formId, data, responseId),
-    onError: (error: Error) => {
-      toast.error('Failed to submit response', error.message);
-    },
-  });
-};
-
-export const useDeleteResponse = (formId: string) => {
+export const useSubmitResponse = () => {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: (responseId: string) => ResponseService.deleteResponse(formId, responseId),
-    onSuccess: () => {
-      toast.success('Response deleted', 'The response has been deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['forms', formId, 'responses'] });
+    mutationFn: (data: ExtendedSubmitResponseData) => {
+      const { formId, ...submitData } = data;
+      return ResponseService.submitResponse(formId, submitData);
     },
-    onError: (error: Error) => {
-      toast.error('Failed to delete response', error.message);
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['responses', variables.formId] });
+      toast.success('Response submitted', 'Thank you for your submission!');
     },
+    onError: (error) => {
+      toast.error('Failed to submit response', error instanceof Error ? error.message : 'An error occurred');
+    }
   });
 };
 
-export const useFormAnalytics = (formId: string) => {
-  return useQuery({
-    queryKey: ['forms', formId, 'analytics'],
-    queryFn: () => ResponseService.getAnalytics(formId),
-    enabled: !!formId,
-    staleTime: 60 * 1000, // 1 minute
+export const useDeleteResponse = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ responseId, formId }: { responseId: string; formId: string }) => 
+      ResponseService.deleteResponse(responseId, formId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['responses', variables.formId] });
+      toast.success('Response deleted', 'The response has been deleted successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete response', error instanceof Error ? error.message : 'An error occurred');
+    }
   });
 };

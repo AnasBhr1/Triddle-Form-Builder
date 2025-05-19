@@ -1,111 +1,145 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { AuthService, LoginCredentials, RegisterData } from '../services/auth';
 import { useAuthStore } from '../store/auth';
 import { toast } from '../store/toast';
+
+// Define types for the API responses
+interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    role?: string;
+  };
+  token?: string;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  message?: string;
+}
+
+interface ForgotPasswordData {
+  email: string;
+}
 
 export const useAuth = () => {
   const {
     user,
     isAuthenticated,
+    isInitialized,
     isLoading,
-    error,
     setUser,
+    setAuthenticated,
+    setInitialized,
     setLoading,
-    setError,
-    clearError,
+    logout
   } = useAuthStore();
+
+  const loginMutation = useMutation({
+    mutationFn: (credentials: LoginCredentials) => {
+      setLoading(true);
+      return AuthService.login(credentials);
+    },
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
+      setUser(data.data.user);
+      setAuthenticated(true);
+      setInitialized(true);
+      setLoading(false);
+      toast.success('Login successful', 'Welcome back!');
+    },
+    onError: (error) => {
+      setLoading(false);
+      toast.error('Login failed', error instanceof Error ? error.message : 'Please check your credentials and try again');
+    }
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: (data: RegisterData) => {
+      setLoading(true);
+      return AuthService.register(data);
+    },
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
+      setUser(data.data.user);
+      setAuthenticated(true);
+      setInitialized(true);
+      setLoading(false);
+      toast.success('Registration successful', 'Your account has been created');
+    },
+    onError: (error) => {
+      setLoading(false);
+      toast.error('Registration failed', error instanceof Error ? error.message : 'Please check your information and try again');
+    }
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: () => {
+      setLoading(true);
+      return AuthService.logout();
+    },
+    onSuccess: () => {
+      logout();
+      toast.success('Logged out', 'You have been successfully logged out');
+    },
+    onError: (error) => {
+      setLoading(false);
+      toast.error('Logout failed', error instanceof Error ? error.message : 'An error occurred while logging out');
+    }
+  });
+
+  const checkAuthMutation = useMutation({
+    mutationFn: () => {
+      setLoading(true);
+      // Fix: Use getCurrentUser instead of checkAuth
+      return AuthService.getCurrentUser();
+    },
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
+      setUser(data.data.user);
+      setAuthenticated(true);
+      setInitialized(true);
+      setLoading(false);
+      toast.success('Session restored', 'Welcome back!');
+    },
+    onError: () => {
+      setLoading(false);
+      setInitialized(true);
+      toast.error('Session expired', 'Please log in again');
+    }
+  });
+
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (email: string) => {
+      const data: ForgotPasswordData = { email };
+      return AuthService.forgotPassword(data);
+    },
+    onSuccess: () => {
+      toast.success('Email sent', 'Check your inbox for password reset instructions');
+    },
+    onError: (error) => {
+      toast.error('Failed to send email', error instanceof Error ? error.message : 'An error occurred');
+    }
+  });
 
   return {
     user,
     isAuthenticated,
+    isInitialized,
     isLoading,
-    error,
-    setUser,
-    setLoading,
-    setError,
-    clearError,
+    login: loginMutation.mutateAsync,
+    register: registerMutation.mutateAsync,
+    logout: logoutMutation.mutateAsync,
+    checkAuth: checkAuthMutation.mutateAsync,
+    forgotPassword: forgotPasswordMutation.mutateAsync
   };
 };
 
+// Add separate hook exports for login and register for backward compatibility
 export const useLogin = () => {
-  const { login } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (credentials: LoginCredentials) => login(credentials.email, credentials.password),
-    onSuccess: () => {
-      toast.success('Login successful', 'Welcome back!');
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-    onError: (error: Error) => {
-      toast.error('Login failed', error.message);
-    },
-  });
+  const { login, isLoading } = useAuth();
+  return { login, isLoading };
 };
 
 export const useRegister = () => {
-  const { register } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: RegisterData) => register(data),
-    onSuccess: () => {
-      toast.success('Registration successful', 'Welcome to Triddle!');
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-    onError: (error: Error) => {
-      toast.error('Registration failed', error.message);
-    },
-  });
-};
-
-export const useLogout = () => {
-  const { logout } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      toast.success('Logout successful', 'See you soon!');
-      queryClient.clear();
-    },
-    onError: (error: Error) => {
-      toast.error('Logout failed', error.message);
-    },
-  });
-};
-
-export const useGetMe = () => {
-  const { getMe } = useAuthStore();
-
-  return useQuery({
-    queryKey: ['user', 'me'],
-    queryFn: getMe,
-    enabled: false, // Only run when explicitly called
-    retry: false,
-  });
-};
-
-export const useForgotPassword = () => {
-  return useMutation({
-    mutationFn: AuthService.forgotPassword,
-    onSuccess: () => {
-      toast.success('Reset link sent', 'Check your email for password reset instructions');
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to send reset link', error.message);
-    },
-  });
-};
-
-export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: AuthService.resetPassword,
-    onSuccess: () => {
-      toast.success('Password reset successful', 'You can now log in with your new password');
-    },
-    onError: (error: Error) => {
-      toast.error('Password reset failed', error.message);
-    },
-  });
+  const { register, isLoading } = useAuth();
+  return { register, isLoading };
 };
