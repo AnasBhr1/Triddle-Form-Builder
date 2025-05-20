@@ -302,19 +302,19 @@ const FormBuilderPage: React.FC = () => {
         {field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number' ? (
           <input
             type={field.type}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder={field.placeholder}
             disabled
           />
         ) : field.type === 'textarea' ? (
           <textarea
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder={field.placeholder}
             disabled
           ></textarea>
         ) : field.type === 'select' ? (
           <select
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             disabled
           >
             <option>Please select</option>
@@ -328,7 +328,7 @@ const FormBuilderPage: React.FC = () => {
               <div key={option} className="flex items-center">
                 <input
                   type="radio"
-                  className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                  className="h-4 w-4 border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                   disabled
                 />
                 <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
@@ -343,7 +343,7 @@ const FormBuilderPage: React.FC = () => {
               <div key={option} className="flex items-center">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                  className="h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                   disabled
                 />
                 <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
@@ -355,13 +355,13 @@ const FormBuilderPage: React.FC = () => {
         ) : field.type === 'date' ? (
           <input
             type="date"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             disabled
           />
         ) : field.type === 'file' ? (
           <input
             type="file"
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300"
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300"
             disabled
           />
         ) : null}
@@ -406,7 +406,7 @@ const FormBuilderPage: React.FC = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleTitleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="Enter form title"
                 />
               </div>
@@ -423,7 +423,7 @@ const FormBuilderPage: React.FC = () => {
                   value={formData.description}
                   onChange={handleDescriptionChange}
                   rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="Enter form description"
                 ></textarea>
               </div>
@@ -480,7 +480,7 @@ const FormBuilderPage: React.FC = () => {
                     type="checkbox"
                     checked={formSettings.showProgressBar}
                     onChange={handleSettingChange}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                    className="h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                   <label
                     htmlFor="showProgressBar"
@@ -498,7 +498,7 @@ const FormBuilderPage: React.FC = () => {
                     type="checkbox"
                     checked={formSettings.allowMultipleSubmissions}
                     onChange={handleSettingChange}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                    className="h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                   <label
                     htmlFor="allowMultipleSubmissions"
@@ -516,7 +516,7 @@ const FormBuilderPage: React.FC = () => {
                     type="checkbox"
                     checked={formSettings.autoSave}
                     onChange={handleSettingChange}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                    className="h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                   <label
                     htmlFor="autoSave"
@@ -539,7 +539,7 @@ const FormBuilderPage: React.FC = () => {
                   name="submitButtonText"
                   value={formSettings.submitButtonText}
                   onChange={handleSettingChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="Submit"
                 />
               </div>
@@ -556,7 +556,7 @@ const FormBuilderPage: React.FC = () => {
                   value={formSettings.successMessage}
                   onChange={handleSettingChange}
                   rows={2}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="Thank you for your submission!"
                 ></textarea>
               </div>
@@ -573,7 +573,7 @@ const FormBuilderPage: React.FC = () => {
                   name="redirectUrl"
                   value={formSettings.redirectUrl}
                   onChange={handleSettingChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="https://example.com/thank-you"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -612,7 +612,7 @@ const FormBuilderPage: React.FC = () => {
                           name="type"
                           value={newField.type}
                           onChange={handleFieldTypeChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                           {FIELD_TYPES.map(type => (
                             <option key={type.id} value={type.id}>
@@ -632,7 +632,7 @@ const FormBuilderPage: React.FC = () => {
                           name="label"
                           value={newField.label}
                           onChange={handleNewFieldChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Enter field label"
                         />
                       </div>
@@ -648,7 +648,7 @@ const FormBuilderPage: React.FC = () => {
                             name="placeholder"
                             value={newField.placeholder || ''}
                             onChange={handleNewFieldChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                             placeholder="Enter placeholder text"
                           />
                         </div>
@@ -664,7 +664,7 @@ const FormBuilderPage: React.FC = () => {
                           name="helpText"
                           value={newField.helpText || ''}
                           onChange={handleNewFieldChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Enter help text"
                         />
                       </div>
@@ -682,7 +682,7 @@ const FormBuilderPage: React.FC = () => {
                                   type="text"
                                   value={option}
                                   disabled
-                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                  className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 />
                                 <button
                                   type="button"
@@ -699,7 +699,7 @@ const FormBuilderPage: React.FC = () => {
                                 value={newOption}
                                 onChange={(e) => setNewOption(e.target.value)}
                                 onKeyPress={handleOptionKeyPress}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 placeholder="Add option"
                               />
                               <button
@@ -722,7 +722,7 @@ const FormBuilderPage: React.FC = () => {
                           name="required"
                           checked={!!newField.required}
                           onChange={handleNewFieldChange}
-                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                          className="h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                         />
                         <label
                           htmlFor="required"
