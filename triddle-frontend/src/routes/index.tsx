@@ -168,6 +168,15 @@ const AppRoutes: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         } />
+        
+        {/* Form Builder - Note: Added new route without ID parameter for new forms */}
+        <Route path="/form-builder" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormBuilderPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
 
         {/* Templates Page */}
         <Route path="/templates" element={

@@ -1,6 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/outline';
+
+interface Field {
+  id: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  helpText?: string;
+  options?: string[];
+}
+
+interface FormData {
+  title: string;
+  description: string;
+  fields: Field[];
+}
 
 interface Template {
   id: string;
@@ -10,6 +26,87 @@ interface Template {
   fieldCount: number;
   imageUrl: string;
 }
+
+// Define form field templates for each template type
+const templateFormData: Record<string, FormData> = {
+  '1': { // Customer Feedback
+    title: 'Customer Feedback Form',
+    description: 'We value your feedback! Please let us know about your experience with our products or services.',
+    fields: [
+      { id: '1', type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true, helpText: 'Please enter your full name' },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true, helpText: "We'll use this to contact you" },
+      { id: '3', type: 'select', label: 'How would you rate your experience?', options: ['Excellent', 'Good', 'Average', 'Poor', 'Very Poor'], required: true },
+      { id: '4', type: 'textarea', label: 'What did you like about our product/service?', required: false },
+      { id: '5', type: 'textarea', label: 'What could we improve?', required: false },
+      { id: '6', type: 'radio', label: 'Would you recommend us to others?', options: ['Definitely', 'Maybe', 'No'], required: true }
+    ]
+  },
+  '2': { // Event Registration
+    title: 'Event Registration Form',
+    description: 'Register for our upcoming event.',
+    fields: [
+      { id: '1', type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+      { id: '3', type: 'tel', label: 'Phone Number', placeholder: '+1 (555) 123-4567', required: true },
+      { id: '4', type: 'select', label: 'Event', options: ['Annual Conference', 'Workshop', 'Webinar', 'Networking Event'], required: true },
+      { id: '5', type: 'select', label: 'Number of Attendees', options: ['1', '2', '3', '4', '5+'], required: true },
+      { id: '6', type: 'radio', label: 'Dietary Preferences', options: ['None', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Other'], required: false },
+      { id: '7', type: 'textarea', label: 'Special Requests', required: false },
+      { id: '8', type: 'checkbox', label: 'I agree to the terms and conditions', options: ['Yes'], required: true }
+    ]
+  },
+  '3': { // Contact Form
+    title: 'Contact Form',
+    description: 'Get in touch with us. We\'d love to hear from you!',
+    fields: [
+      { id: '1', type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+      { id: '3', type: 'tel', label: 'Phone Number', placeholder: '+1 (555) 123-4567', required: false },
+      { id: '4', type: 'select', label: 'Subject', options: ['General Inquiry', 'Support', 'Feedback', 'Partnership', 'Other'], required: true },
+      { id: '5', type: 'textarea', label: 'Message', placeholder: 'Your message here...', required: true }
+    ]
+  },
+  '4': { // Job Application
+    title: 'Job Application Form',
+    description: 'Apply for open positions at our company.',
+    fields: [
+      { id: '1', type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+      { id: '3', type: 'tel', label: 'Phone Number', placeholder: '+1 (555) 123-4567', required: true },
+      { id: '4', type: 'select', label: 'Position Applied For', options: ['Software Developer', 'Designer', 'Marketing Specialist', 'Project Manager', 'Other'], required: true },
+      { id: '5', type: 'textarea', label: 'Work Experience', required: true },
+      { id: '6', type: 'textarea', label: 'Education', required: true },
+      { id: '7', type: 'textarea', label: 'Skills', required: true },
+      { id: '8', type: 'file', label: 'Resume/CV', required: true, helpText: 'Upload your resume (PDF, DOC, DOCX)' },
+      { id: '9', type: 'file', label: 'Cover Letter', required: false },
+      { id: '10', type: 'select', label: 'How did you hear about us?', options: ['Job Board', 'Company Website', 'Referral', 'Social Media', 'Other'], required: false },
+      { id: '11', type: 'checkbox', label: 'I certify that all information provided is accurate', options: ['Yes'], required: true }
+    ]
+  },
+  '5': { // Product Survey
+    title: 'Product Survey Form',
+    description: 'Help us improve our products by providing your feedback.',
+    fields: [
+      { id: '1', type: 'text', label: 'Full Name', placeholder: 'John Doe', required: true },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+      { id: '3', type: 'select', label: 'Which product did you purchase?', options: ['Product A', 'Product B', 'Product C', 'Product D'], required: true },
+      { id: '4', type: 'radio', label: 'How would you rate the product quality?', options: ['Excellent', 'Good', 'Average', 'Poor', 'Very Poor'], required: true },
+      { id: '5', type: 'radio', label: 'How easy was the product to use?', options: ['Very Easy', 'Easy', 'Neutral', 'Difficult', 'Very Difficult'], required: true },
+      { id: '6', type: 'checkbox', label: 'Which features do you use regularly?', options: ['Feature 1', 'Feature 2', 'Feature 3', 'Feature 4', 'Feature 5'], required: false },
+      { id: '7', type: 'textarea', label: 'What features would you like to see added?', required: false },
+      { id: '8', type: 'radio', label: 'Would you recommend this product to others?', options: ['Definitely', 'Probably', 'Not Sure', 'Probably Not', 'Definitely Not'], required: true }
+    ]
+  },
+  '6': { // Newsletter Signup
+    title: 'Newsletter Signup Form',
+    description: 'Subscribe to our newsletter to stay updated with the latest news and offers.',
+    fields: [
+      { id: '1', type: 'text', label: 'Name', placeholder: 'John Doe', required: true },
+      { id: '2', type: 'email', label: 'Email Address', placeholder: 'john@example.com', required: true },
+      { id: '3', type: 'checkbox', label: 'Interests', options: ['Technology', 'Business', 'Design', 'Marketing', 'Other'], required: false }
+    ]
+  }
+};
 
 const TEMPLATES: Template[] = [
   {
@@ -65,6 +162,7 @@ const TEMPLATES: Template[] = [
 const TemplatesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
+  const navigate = useNavigate();
 
   const categories = Array.from(new Set(TEMPLATES.map((template) => template.category)));
 
@@ -76,9 +174,19 @@ const TemplatesPage: React.FC = () => {
   });
 
   const handleSelectTemplate = (templateId: string) => {
-    // In a real application, this would create a new form based on the template
-    // For now, we'll just redirect to the form builder
-    window.location.href = `/form/new?template=${templateId}`;
+    // Get the form data for the selected template
+    const formData = templateFormData[templateId];
+    
+    if (formData) {
+      // Navigate to form builder with the template data
+      navigate('/form-builder', { 
+        state: { 
+          isNewForm: true,
+          template: templateId,
+          formData: formData
+        } 
+      });
+    }
   };
 
   return (
