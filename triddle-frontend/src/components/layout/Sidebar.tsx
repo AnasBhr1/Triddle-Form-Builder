@@ -39,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   React.useEffect(() => {
     // Automatically open the forms dropdown if we're on a forms page
-    if (location.pathname.includes('/forms')) {
+    if (location.pathname.includes('/forms') || location.pathname.includes('/form/') || location.pathname.includes('/templates')) {
       setFormsDropdownOpen(true);
     }
   }, [location]);
@@ -61,11 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         },
         {
           name: 'Create Form',
-          path: '/forms/create',
+          path: '/form/new', // Updated from /forms/create to /form/new
         },
         {
           name: 'Templates',
-          path: '/forms/templates',
+          path: '/templates', // Updated from /forms/templates to /templates
         },
       ],
     },

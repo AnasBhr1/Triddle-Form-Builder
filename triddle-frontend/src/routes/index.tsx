@@ -23,6 +23,8 @@ import AdminFormsPage from '../pages/admin/AdminFormsPage';
 
 // User Pages
 import DashboardPage from '../pages/dashboard/DashboardPage';
+
+// Forms Pages
 import FormsPage from '../pages/forms/FormsPage';
 import FormBuilderPage from '../pages/forms/FormBuilderPage';
 import FormPreviewPage from '../pages/forms/FormPreviewPage';
@@ -30,6 +32,19 @@ import FormResponsesPage from '../pages/forms/FormResponsesPage';
 import FormSettingsPage from '../pages/forms/FormSettingsPage';
 import ViewFormPage from '../pages/forms/ViewFormPage';
 import SubmitSuccessPage from '../pages/forms/SubmitSuccessPage';
+import CreateFormPage from '../pages/forms/CreateFormPage';
+import TemplatesPage from '../pages/forms/TemplatesPage'; 
+
+// Responses Page
+import ResponsesPage from '../pages/forms/FormResponsesPage'; // Reusing the same component
+
+// Analytics Page
+import AnalyticsPage from '../pages/analytics/AnalyticsPage';
+
+// Help Center Page
+import HelpCenterPage from '../pages/help/HelpCenterPage';
+
+// User Pages
 import ProfilePage from '../pages/user/ProfilePage';
 import SettingsPage from '../pages/user/SettingsPage';
 
@@ -81,17 +96,6 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
   
   return <>{children}</>;
 };
-
-// Simple placeholder for Analytics page until you build a dedicated component
-const AnalyticsPlaceholder: React.FC = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">Analytics Dashboard</h1>
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <p className="text-gray-600 dark:text-gray-400 mb-4">Analytics features coming soon!</p>
-      <p className="text-gray-600 dark:text-gray-400">You'll be able to track form submissions, user engagement, and more with detailed charts and reports.</p>
-    </div>
-  </div>
-);
 
 const AppRoutes: React.FC = () => {
   return (
@@ -147,7 +151,7 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
         
-        {/* Forms */}
+        {/* Forms Main Page */}
         <Route path="/forms" element={
           <ProtectedRoute>
             <MainLayout>
@@ -155,11 +159,21 @@ const AppRoutes: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         } />
-        
+
+        {/* Create New Form Page */}
         <Route path="/form/new" element={
           <ProtectedRoute>
             <MainLayout>
-              <FormBuilderPage />
+              <CreateFormPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Templates Page */}
+        <Route path="/templates" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <TemplatesPage />
             </MainLayout>
           </ProtectedRoute>
         } />
@@ -195,26 +209,33 @@ const AppRoutes: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         } />
-        
-        {/* NEW ROUTES - Start */}
-        {/* Main Responses page for all forms */}
+
+        {/* Main Responses Page (All forms) */}
         <Route path="/responses" element={
           <ProtectedRoute>
             <MainLayout>
-              <FormResponsesPage />
+              <ResponsesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Analytics Dashboard */}
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AnalyticsPage />
             </MainLayout>
           </ProtectedRoute>
         } />
         
-        {/* Analytics page */}
-        <Route path="/analytics" element={
+        {/* Help Center */}
+        <Route path="/help" element={
           <ProtectedRoute>
             <MainLayout>
-              <AnalyticsPlaceholder />
+              <HelpCenterPage />
             </MainLayout>
           </ProtectedRoute>
         } />
-        {/* NEW ROUTES - End */}
         
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={
