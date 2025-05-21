@@ -101,7 +101,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-20 h-full w-64 flex-col border-r bg-white pt-16 transition-all dark:border-gray-700 dark:bg-gray-800',
+        'fixed left-0 top-0 z-20 h-full w-64 flex-col border-r bg-white pt-16 dark:border-gray-700 dark:bg-gray-800',
+        'transition-transform duration-300 ease-in-out',
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-16',
         'flex'
       )}
